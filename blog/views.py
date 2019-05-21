@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
-from .models import Article
+from .models import Article, Comment
 from .forms import ArticleForm, CommentForm
 
 
@@ -53,3 +53,21 @@ def post_delete(request, article_id):
     article = get_object_or_404(Article, id=article_id)
     article.delete()
     return redirect("blog:board")
+
+def comment_edit(request, article_id, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    if request.method == "POST":
+        form = CommentForm(request.POST, instance=comment)
+        if form.is_valid():
+                comment = form.save(commit=False)
+                comment.comment_text = form.cleaned_data["comment_text"]
+                comment.save()
+                return redirect("blog:detail", article_id)
+    else:
+        form = CommentForm()
+        return render(request, "blog/comment_edit.html", {"form": form})
+
+def comment_delete(request, article_id, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    comment.delete()
+    return redirect("blog:detail", article_id)
